@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outline VPN Server Name Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #0099cc;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0099cc;
+            box-shadow: 0 0 0 3px rgba(0, 153, 204, 0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0099cc;
+            box-shadow: 0 0 0 3px rgba(0, 153, 204, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .convert-btn {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: white;
+        }
+
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 153, 204, 0.3);
+        }
+
+        .clear-btn {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .clear-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e6f7ff;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            color: #0099cc;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .server-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #0099cc;
+        }
+
+        .server-info-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .server-info-item strong {
+            color: #333;
+        }
+
+        .server-info-item span {
+            color: #0099cc;
+            font-weight: 500;
+        }
+
+        .copy-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .copy-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 12px;
+            background: white;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            padding: 10px 20px;
+            background: #0099cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #007aa3;
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e6f7ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #0066a1;
+            border-left: 4px solid #0099cc;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #0099cc;
+        }
+
+        .example-box {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Outline VPN Server Name Editor</h1>
+        <p class="subtitle">Outline VPN Server Name ကို သင်ကြိုက်နှစ်သက်သော အမည်ဖြင့် ပြောင်းလဲပါ</p>
+
+        <div class="input-group">
+            <label for="accessKey">🔑 Outline Access Key</label>
+            <textarea 
+                id="accessKey" 
+                placeholder="ss://... သို့မဟုတ် ssconf://... နဲ့ စတဲ့ access key ထည့်သွင်းပါ"
+            ></textarea>
+            <div class="error-message" id="keyError">ကျေးဇူးပြု၍ မှန်ကန်သော Outline access key ထည့်သွင်းပါ</div>
+        </div>
+
+        <div class="input-group">
+            <label for="serverName">✏️ Server အမည်အသစ်</label>
+            <input 
+                type="text" 
+                id="serverName" 
+                placeholder="ဥပမာ - My VPN Server သို့မဟုတ် USA Server"
+            >
+            <div class="error-message" id="nameError">ကျေးဇူးပြု၍ server အမည်အသစ် ထည့်သွင်းပါ</div>
+        </div>
+
+        <div class="button-group">
+            <button class="convert-btn" onclick="changeServerName()">✨ Change Name</button>
+            <button class="clear-btn" onclick="clearForm()">🗑️ Clear</button>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-header">✅ ပြောင်းလဲပြီးပါပြီ</div>
+            <div class="server-info">
+                <div class="server-info-item">
+                    <strong>ပြောင်းခဲ့သော အမည်:</strong> <span id="oldName"></span>
+                </div>
+                <div class="server-info-item">
+                    <strong>အမည်အသစ်:</strong> <span id="newName"></span>
+                </div>
+                <div class="server-info-item">
+                    <strong>Server:</strong> <span id="serverHost"></span>
+                </div>
+            </div>
+            <div class="copy-section">
+                <textarea class="copy-input" id="resultKey" readonly rows="3"></textarea>
+                <button class="copy-btn" onclick="copyToClipboard()">📋 Copy</button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 အသုံးပြုနည်း:</strong>
+            1. Outline app မှ access key ကို copy ယူပါ (ss:// သို့မဟုတ် ssconf:// နဲ့ စ)<br>
+            2. ဒီမှာ paste လုပ်ပါ<br>
+            3. သင်ကြိုက်နှစ်သက်သော server အမည်အသစ် ထည့်ပါ<br>
+            4. "Change Name" နှိပ်ပါ<br>
+            5. ရလာတဲ့ access key အသစ်ကို copy ယူပြီး Outline app မှာ သုံးပါ
+            
+            <div class="example-box">
+                <strong>Example Access Key:</strong><br>
+                ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA==@example.com:8388/#My%20Server
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeServerName() {
+            const accessKey = document.getElementById('accessKey').value.trim();
+            const serverName = document.getElementById('serverName').value.trim();
+            const keyError = document.getElementById('keyError');
+            const nameError = document.getElementById('nameError');
+            const resultSection = document.getElementById('resultSection');
+
+            // Reset errors
+            keyError.classList.remove('show');
+            nameError.classList.remove('show');
+
+            // Validate inputs
+            let hasError = false;
+
+            if (!accessKey) {
+                keyError.textContent = 'ကျေးဇူးပြု၍ access key ထည့်သွင်းပါ';
+                keyError.classList.add('show');
+                hasError = true;
+            } else if (!accessKey.startsWith('ss://') && !accessKey.startsWith('ssconf://')) {
+                keyError.textContent = 'Access key သည် ss:// သို့မဟုတ် ssconf:// နဲ့ စရပါမည်';
+                keyError.classList.add('show');
+                hasError = true;
+            }
+
+            if (!serverName) {
+                nameError.textContent = 'ကျေးဇူးပြု၍ server အမည်အသစ် ထည့်သွင်းပါ';
+                nameError.classList.add('show');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            try {
+                // Parse the access key
+                let parsedKey;
+                let oldServerName = 'Outline Server';
+                let serverHost = '';
+
+                // Handle both ss:// and ssconf:// formats
+                if (accessKey.startsWith('ssconf://')) {
+                    // For ssconf://, extract the base URL and parameters
+                    parsedKey = accessKey;
+                    
+                    // Try to extract old name from URL fragment
+                    if (accessKey.includes('#')) {
+                        oldServerName = decodeURIComponent(accessKey.split('#')[1].split('&')[0]);
+                    }
+                    
+                    // Try to extract host
+                    try {
+                        const url = new URL(accessKey);
+                        serverHost = url.hostname;
+                    } catch (e) {
+                        serverHost = 'Unknown';
+                    }
+                } else {
+                    // For ss:// format
+                    parsedKey = accessKey;
+                    
+                    // Extract old server name if exists (after #)
+                    if (accessKey.includes('#')) {
+                        oldServerName = decodeURIComponent(accessKey.split('#')[1]);
+                    }
+                    
+                    // Extract server host
+                    try {
+                        const keyPart = accessKey.split('#')[0];
+                        const match = keyPart.match(/@([^:]+):/);
+                        if (match) {
+                            serverHost = match[1];
+                        }
+                    } catch (e) {
+                        serverHost = 'Unknown';
+                    }
+                }
+
+                // Create new access key with new name
+                const keyWithoutName = accessKey.split('#')[0];
+                const encodedNewName = encodeURIComponent(serverName);
+                const newAccessKey = `${keyWithoutName}#${encodedNewName}`;
+
+                // Display results
+                document.getElementById('oldName').textContent = oldServerName;
+                document.getElementById('newName').textContent = serverName;
+                document.getElementById('serverHost').textContent = serverHost;
+                document.getElementById('resultKey').value = newAccessKey;
+                resultSection.classList.add('show');
+
+                // Reset copy button
+                const copyBtn = document.querySelector('.copy-btn');
+                copyBtn.textContent = '📋 Copy';
+                copyBtn.classList.remove('copied');
+
+            } catch (error) {
+                keyError.textContent = 'Access key format မမှန်ကန်ပါ။ ကျေးဇူးပြု၍ ထပ်စမ်းကြည့်ပါ';
+                keyError.classList.add('show');
+                console.error('Parse error:', error);
+            }
+        }
+
+        function copyToClipboard() {
+            const resultKey = document.getElementById('resultKey');
+            const copyBtn = document.querySelector('.copy-btn');
+
+            resultKey.select();
+            resultKey.setSelectionRange(0, 99999);
+
+            navigator.clipboard.writeText(resultKey.value).then(() => {
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.classList.add('copied');
+
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 Copy';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                document.execCommand('copy');
+                copyBtn.textContent = '✅ Copied!';
+                copyBtn.classList.add('copied');
+            });
+        }
+
+        function clearForm() {
+            document.getElementById('accessKey').value = '';
+            document.getElementById('serverName').value = '';
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('keyError').classList.remove('show');
+            document.getElementById('nameError').classList.remove('show');
+        }
+
+        // Allow Enter key to convert (on server name input)
+        document.getElementById('serverName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                changeServerName();
+            }
+        });
+    </script>
+</body>
+</html>
