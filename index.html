@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outline VPN Server Name Editor</title>
+    <title>Outline Key Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -11,137 +12,311 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #475569;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #cbd5e1;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
+            transition: all 0.3s ease;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        h1 {
-            color: #0099cc;
+        .header {
             text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
             margin-bottom: 10px;
-            font-size: 28px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #666;
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 30px;
-            font-size: 14px;
+            gap: 15px;
+            flex-wrap: wrap;
+            animation: fadeIn 0.6s ease 0.2s both;
+        }
+
+        .theme-toggle, .lang-toggle {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover, .lang-toggle:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            animation: fadeInUp 0.6s ease;
         }
 
         .input-group {
             margin-bottom: 20px;
         }
 
-        label {
+        .input-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
             font-weight: 600;
-            font-size: 14px;
+            color: var(--text-secondary);
         }
 
-        textarea {
+        .input-group input, .input-group textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-            transition: all 0.3s;
-            resize: vertical;
-            min-height: 120px;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
-        textarea:focus {
+        .input-group input:focus, .input-group textarea:focus {
             outline: none;
-            border-color: #0099cc;
-            box-shadow: 0 0 0 3px rgba(0, 153, 204, 0.1);
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #0099cc;
-            box-shadow: 0 0 0 3px rgba(0, 153, 204, 0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .button-group {
             display: flex;
-            gap: 10px;
-            margin-top: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         button {
             flex: 1;
-            padding: 14px;
+            min-width: 120px;
+            padding: 15px 25px;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .convert-btn {
-            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
             color: white;
         }
 
-        .convert-btn:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 153, 204, 0.3);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
         }
 
-        .clear-btn {
-            background: #f0f0f0;
-            color: #666;
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
         }
 
-        .clear-btn:hover {
-            background: #e0e0e0;
+        .btn-secondary:hover {
+            background: var(--border);
+            transform: translateY(-2px);
         }
 
-        .result-section {
-            margin-top: 30px;
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .result {
+            margin-top: 25px;
             padding: 20px;
-            background: #e6f7ff;
-            border-radius: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .result.hidden {
             display: none;
         }
 
-        .result-section.show {
-            display: block;
-            animation: slideIn 0.3s ease-out;
+        .result-url {
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
         }
 
-        @keyframes slideIn {
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .history-item {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            animation: slideIn 0.4s ease;
+        }
+
+        .history-item:hover {
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .history-item-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+
+        .history-item-url {
+            font-family: 'Courier New', monospace;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        .history-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .history-item-actions button {
+            min-width: auto;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 0.4s ease;
+            z-index: 1000;
+        }
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
             }
             to {
                 opacity: 1;
@@ -149,308 +324,526 @@
             }
         }
 
-        .result-header {
-            color: #0099cc;
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 16px;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .server-info {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #0099cc;
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
         }
 
-        .server-info-item {
-            margin-bottom: 8px;
-            font-size: 14px;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
-        .server-info-item strong {
-            color: #333;
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                min-width: 100%;
+            }
         }
 
-        .server-info-item span {
-            color: #0099cc;
-            font-weight: 500;
-        }
-
-        .copy-section {
+        .checkbox-wrapper {
             display: flex;
+            align-items: center;
             gap: 10px;
-        }
-
-        .copy-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 12px;
-            background: white;
-            font-family: 'Courier New', monospace;
-        }
-
-        .copy-btn {
-            padding: 10px 20px;
-            background: #0099cc;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .copy-btn:hover {
-            background: #007aa3;
-        }
-
-        .copy-btn.copied {
-            background: #10b981;
-        }
-
-        .error-message {
-            color: #ef4444;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .info-box {
-            background: #e6f7ff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #0066a1;
-            border-left: 4px solid #0099cc;
-        }
-
-        .info-box strong {
-            display: block;
-            margin-bottom: 8px;
-            color: #0099cc;
-        }
-
-        .example-box {
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 5px;
             margin-top: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            word-break: break-all;
-            color: #555;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .select-all {
+            margin-bottom: 15px;
         }
     </style>
 </head>
-<body>
+<body data-theme="dark">
     <div class="container">
-        <h1>🔐 Outline VPN Server Name Editor</h1>
-        <p class="subtitle">Outline VPN Server Name ကို သင်ကြိုက်နှစ်သက်သော အမည်ဖြင့် ပြောင်းလဲပါ</p>
-
-        <div class="input-group">
-            <label for="accessKey">🔑 Outline Access Key</label>
-            <textarea 
-                id="accessKey" 
-                placeholder="ss://... သို့မဟုတ် ssconf://... နဲ့ စတဲ့ access key ထည့်သွင်းပါ"
-            ></textarea>
-            <div class="error-message" id="keyError">ကျေးဇူးပြု၍ မှန်ကန်သော Outline access key ထည့်သွင်းပါ</div>
+        <div class="header">
+            <h1 id="mainTitle">Outline Access Key Renamer</h1>
+            <p id="mainSubtitle">Professional Outline Access key Rename App</p>
         </div>
 
-        <div class="input-group">
-            <label for="serverName">✏️ Server အမည်အသစ်</label>
-            <input 
-                type="text" 
-                id="serverName" 
-                placeholder="ဥပမာ - My VPN Server သို့မဟုတ် USA Server"
-            >
-            <div class="error-message" id="nameError">ကျေးဇူးပြု၍ server အမည်အသစ် ထည့်သွင်းပါ</div>
+        <div class="controls">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="themeIcon">🌙</span>
+                <span id="themeText">Dark Mode</span>
+            </button>
+            <button class="lang-toggle" onclick="toggleLanguage()">
+                <span>🌐</span>
+                <span id="langText">မြန်မာ</span>
+            </button>
         </div>
 
-        <div class="button-group">
-            <button class="convert-btn" onclick="changeServerName()">✨ Change Name</button>
-            <button class="clear-btn" onclick="clearForm()">🗑️ Clear</button>
-        </div>
-
-        <div class="result-section" id="resultSection">
-            <div class="result-header">✅ ပြောင်းလဲပြီးပါပြီ</div>
-            <div class="server-info">
-                <div class="server-info-item">
-                    <strong>ပြောင်းခဲ့သော အမည်:</strong> <span id="oldName"></span>
-                </div>
-                <div class="server-info-item">
-                    <strong>အမည်အသစ်:</strong> <span id="newName"></span>
-                </div>
-                <div class="server-info-item">
-                    <strong>Server:</strong> <span id="serverHost"></span>
-                </div>
+        <div class="card">
+            <div class="input-group">
+                <label for="clientUrl" id="labelUrl">Access Key</label>
+                <textarea id="clientUrl" rows="3" placeholder="ss://..."></textarea>
             </div>
-            <div class="copy-section">
-                <textarea class="copy-input" id="resultKey" readonly rows="3"></textarea>
-                <button class="copy-btn" onclick="copyToClipboard()">📋 Copy</button>
+
+            <div class="input-group">
+                <label for="customName" id="labelName">Custom Name</label>
+                <input type="text" id="customName" placeholder="My VPN Server">
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="changeName()">
+                    <span>✏️</span>
+                    <span id="btnChangeName">Change Name</span>
+                </button>
+                <button class="btn-secondary" onclick="clearFields()">
+                    <span>🗑️</span>
+                    <span id="btnClear">Clear</span>
+                </button>
+            </div>
+
+            <div id="result" class="result hidden">
+                <div class="input-group">
+                    <label id="labelRenamed">Renamed Key:</label>
+                    <div class="result-url" id="resultUrl"></div>
+                </div>
+                <button class="btn-success" onclick="copyUrl()">
+                    <span>📋</span>
+                    <span id="btnCopy">Copy Key</span>
+                </button>
+                <div id="qrcode"></div>
             </div>
         </div>
 
-        <div class="info-box">
-            <strong>💡 အသုံးပြုနည်း:</strong>
-            1. Outline app မှ access key ကို copy ယူပါ (ss:// သို့မဟုတ် ssconf:// နဲ့ စ)<br>
-            2. ဒီမှာ paste လုပ်ပါ<br>
-            3. သင်ကြိုက်နှစ်သက်သော server အမည်အသစ် ထည့်ပါ<br>
-            4. "Change Name" နှိပ်ပါ<br>
-            5. ရလာတဲ့ access key အသစ်ကို copy ယူပြီး Outline app မှာ သုံးပါ
-            
-            <div class="example-box">
-                <strong>Example Access Key:</strong><br>
-                ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpwYXNzd29yZA==@example.com:8388/#My%20Server
+        <div class="card">
+            <button class="btn-primary" onclick="toggleHistory()" id="btnToggleHistory" style="width: 100%; margin-bottom: 20px;">
+                <span id="historyIcon">📜</span>
+                <span id="historyToggleText">Show History</span>
+                <span style="margin-left: auto;">▼</span>
+            </button>
+
+            <div id="historySection" style="display: none;">
+                <h2 id="historyTitle" style="margin-bottom: 20px;">History</h2>
+
+                <div class="select-all checkbox-wrapper">
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                    <label for="selectAll" id="labelSelectAll">Select All</label>
+                    <button class="btn-danger" onclick="deleteSelected()" id="btnDeleteSelected" style="margin-left: auto;">
+                        <span>🗑️</span>
+                        <span>Delete Selected</span>
+                    </button>
+                </div>
+
+                <div id="historyList"></div>
+            </div>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1)); border: 2px solid var(--accent); border-left: 5px solid var(--accent);">
+            <h3 id="infoTitle" style="color: var(--accent); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem;">💡</span>
+                <span>How to use:</span>
+            </h3>
+            <ol id="instructionsList" style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+                <li>Copy your Outline app access key (<code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; color: var(--accent);">ss://</code> or <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; color: var(--accent);">ssconf://</code>)</li>
+                <li>Paste it into the box above</li>
+                <li>Enter your desired server name</li>
+                <li>Click <strong>"Change Name"</strong> button</li>
+                <li>Copy the new access key and use it in your Outline app</li>
+            </ol>
+            <div style="margin-top: 20px; padding: 15px; background: var(--bg-tertiary); border-radius: 10px; border-left: 4px solid var(--success);">
+                <p style="color: var(--text-secondary); margin: 0;"><strong style="color: var(--success);">Example Access Key:</strong></p>
+                <code id="exampleKey" style="display: block; margin-top: 8px; color: var(--text-primary); font-size: 0.85rem; word-break: break-all; background: var(--bg-secondary); padding: 10px; border-radius: 6px;">ss://<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a1f893c9c9f893c9c9eccbe0d5c0f6f791fbc890d6c393d994ecf5ecd6eff5d1d6f8f9efdbc59398d8fbe09c9ce1c4d9c0ccd1cdc48fc2cecc">[email&#160;protected]</a>:8388/#MyServer</code>
             </div>
         </div>
     </div>
 
-    <script>
-        function changeServerName() {
-            const accessKey = document.getElementById('accessKey').value.trim();
-            const serverName = document.getElementById('serverName').value.trim();
-            const keyError = document.getElementById('keyError');
-            const nameError = document.getElementById('nameError');
-            const resultSection = document.getElementById('resultSection');
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        const translations = {
+            en: {
+                mainTitle: "Outline Access Key Renamer",
+                mainSubtitle: "Professional Outline Access key Rename App",
+                themeText: {dark: "Dark Mode", light: "Light Mode"},
+                langText: "မြန်မာ",
+                infoTitle: "How to use:",
+                instructions: [
+                    'Copy your Outline app access key (<code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; color: var(--accent);">ss://</code> or <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; color: var(--accent);">ssconf://</code>)',
+                    'Paste it into the box above',
+                    'Enter your desired server name',
+                    'Click <strong>"Change Name"</strong> button',
+                    'Copy the new access key and use it in your Outline app'
+                ],
+                exampleKeyLabel: "Example Access Key:",
+                labelUrl: "Access Key",
+                labelName: "Custom Name",
+                btnChangeName: "Change Name",
+                btnClear: "Clear",
+                labelRenamed: "Renamed Key:",
+                btnCopy: "Copy Key",
+                historyTitle: "History",
+                historyToggleText: {show: "Show History", hide: "Hide History"},
+                btnDeleteSelected: "Delete Selected",
+                labelSelectAll: "Select All",
+                btnDelete: "Delete",
+                btnView: "View QR",
+                notifCopied: "✅ Copied to clipboard!",
+                notifSaved: "✅ Saved to history!",
+                notifDeleted: "✅ Deleted!",
+                emptyHistory: "No history yet",
+                emptyHistoryDesc: "Your renamed keys will appear here",
+                errorEmpty: "⚠️ Please enter both access key and name",
+                errorInvalid: "⚠️ Invalid Outline access key"
+            },
+            mm: {
+                mainTitle: "Outline Access Key အမည်ပြောင်းစနစ်",
+                mainSubtitle: "Professional Outline Access key Rename App",
+                themeText: {dark: "Dark Mode", light: "Light Mode"},
+                langText: "English",
+                infoTitle: "အသုံးပြုနည်း:",
+                instructions: [
+                    'Outline app မှ access key ကို copy လုပ်ပါ (<code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; color: var(--accent);">ss://</code> သို့မဟုတ် <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; color: var(--accent);">ssconf://</code> ဖြင့်)',
+                    'အပေါ်က box ထဲမှာ paste လုပ်ပါ',
+                    'သင်လိုချင်တဲ့ server အမည်အသစ်ကို ရိုက်ထည့်ပါ',
+                    '<strong>"အမည်ပြောင်းမည်"</strong> ခလုတ်ကို နှိပ်ပါ',
+                    'ရလာတဲ့ access key အသစ်ကို copy လုပ်ပြီး Outline app မှာ သုံးပါ'
+                ],
+                exampleKeyLabel: "ဥပမာ Access Key:",
+                labelUrl: "Access Key",
+                labelName: "အမည်ပြောင်းမည်",
+                btnChangeName: "အမည်ပြောင်းမည်",
+                btnClear: "ရှင်းမည်",
+                labelRenamed: "ပြောင်းလဲပြီး Key:",
+                btnCopy: "Copy Key",
+                historyTitle: "မှတ်တမ်း",
+                historyToggleText: {show: "မှတ်တမ်း ကြည့်မည်", hide: "မှတ်တမ်း ဝှက်မည်"},
+                btnDeleteSelected: "ရွေးချယ်ထားသည်များ ဖျက်မည်",
+                labelSelectAll: "အားလုံး ရွေးမည်",
+                btnDelete: "ဖျက်မည်",
+                btnView: "QR ကြည့်မည်",
+                notifCopied: "✅ Copy ကူးပြီးပါပြီ!",
+                notifSaved: "✅ မှတ်တမ်းထဲ သိမ်းပြီးပါပြီ!",
+                notifDeleted: "✅ ဖျက်ပြီးပါပြီ!",
+                emptyHistory: "မှတ်တမ်း မရှိသေးပါ",
+                emptyHistoryDesc: "အမည်ပြောင်းထားသော key များ ဒီမှာ ပေါ်လာပါမယ်",
+                errorEmpty: "⚠️ Access key နှင့် အမည် နှစ်ခုလုံး ထည့်ပေးပါ",
+                errorInvalid: "⚠️ Outline access key မှားနေပါတယ်"
+            }
+        };
 
-            // Reset errors
-            keyError.classList.remove('show');
-            nameError.classList.remove('show');
+        let currentLang = 'en';
+        let currentTheme = 'dark';
+        let history = JSON.parse(localStorage.getItem('outlineHistory')) || [];
+        let historyVisible = false;
 
-            // Validate inputs
-            let hasError = false;
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('themeIcon').textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+            updateTranslations();
+        }
 
-            if (!accessKey) {
-                keyError.textContent = 'ကျေးဇူးပြု၍ access key ထည့်သွင်းပါ';
-                keyError.classList.add('show');
-                hasError = true;
-            } else if (!accessKey.startsWith('ss://') && !accessKey.startsWith('ssconf://')) {
-                keyError.textContent = 'Access key သည် ss:// သို့မဟုတ် ssconf:// နဲ့ စရပါမည်';
-                keyError.classList.add('show');
-                hasError = true;
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'mm' : 'en';
+            updateTranslations();
+        }
+
+        function updateTranslations() {
+            const t = translations[currentLang];
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('mainSubtitle').textContent = t.mainSubtitle;
+            document.getElementById('themeText').textContent = t.themeText[currentTheme];
+            document.getElementById('langText').textContent = t.langText;
+            document.getElementById('infoTitle').innerHTML = `<span style="font-size: 1.5rem;">💡</span><span>${t.infoTitle}</span>`;
+            
+            // Update instructions list
+            const instructionsList = document.getElementById('instructionsList');
+            instructionsList.innerHTML = t.instructions.map(instruction => `<li>${instruction}</li>`).join('');
+            
+            // Update example key label
+            const exampleKeyDiv = instructionsList.parentElement.querySelector('p');
+            exampleKeyDiv.innerHTML = `<strong style="color: var(--success);">${t.exampleKeyLabel}</strong>`;
+            
+            document.getElementById('labelUrl').textContent = t.labelUrl;
+            document.getElementById('labelName').textContent = t.labelName;
+            document.getElementById('btnChangeName').textContent = t.btnChangeName;
+            document.getElementById('btnClear').textContent = t.btnClear;
+            document.getElementById('labelRenamed').textContent = t.labelRenamed;
+            document.getElementById('btnCopy').textContent = t.btnCopy;
+            document.getElementById('historyTitle').textContent = t.historyTitle;
+            document.getElementById('historyToggleText').textContent = historyVisible ? t.historyToggleText.hide : t.historyToggleText.show;
+            document.getElementById('btnDeleteSelected').querySelector('span:last-child').textContent = t.btnDeleteSelected;
+            document.getElementById('labelSelectAll').textContent = t.labelSelectAll;
+            
+            renderHistory();
+        }
+
+        function toggleHistory() {
+            const historySection = document.getElementById('historySection');
+            const arrow = document.getElementById('btnToggleHistory').querySelector('span:last-child');
+            const t = translations[currentLang];
+            
+            historyVisible = !historyVisible;
+            historySection.style.display = historyVisible ? 'block' : 'none';
+            arrow.textContent = historyVisible ? '▲' : '▼';
+            document.getElementById('historyToggleText').textContent = historyVisible ? t.historyToggleText.hide : t.historyToggleText.show;
+        }
+
+        function changeName() {
+            const url = document.getElementById('clientUrl').value.trim();
+            const name = document.getElementById('customName').value.trim();
+            const t = translations[currentLang];
+
+            if (!url || !name) {
+                showNotification(t.errorEmpty, 'error');
+                return;
             }
 
-            if (!serverName) {
-                nameError.textContent = 'ကျေးဇူးပြု၍ server အမည်အသစ် ထည့်သွင်းပါ';
-                nameError.classList.add('show');
-                hasError = true;
+            if (!url.startsWith('ss://')) {
+                showNotification(t.errorInvalid, 'error');
+                return;
             }
-
-            if (hasError) return;
 
             try {
-                // Parse the access key
-                let parsedKey;
-                let oldServerName = 'Outline Server';
-                let serverHost = '';
+                const urlObj = new URL(url);
+                urlObj.hash = '#' + encodeURIComponent(name);
+                const renamedUrl = urlObj.toString();
 
-                // Handle both ss:// and ssconf:// formats
-                if (accessKey.startsWith('ssconf://')) {
-                    // For ssconf://, extract the base URL and parameters
-                    parsedKey = accessKey;
-                    
-                    // Try to extract old name from URL fragment
-                    if (accessKey.includes('#')) {
-                        oldServerName = decodeURIComponent(accessKey.split('#')[1].split('&')[0]);
-                    }
-                    
-                    // Try to extract host
-                    try {
-                        const url = new URL(accessKey);
-                        serverHost = url.hostname;
-                    } catch (e) {
-                        serverHost = 'Unknown';
-                    }
-                } else {
-                    // For ss:// format
-                    parsedKey = accessKey;
-                    
-                    // Extract old server name if exists (after #)
-                    if (accessKey.includes('#')) {
-                        oldServerName = decodeURIComponent(accessKey.split('#')[1]);
-                    }
-                    
-                    // Extract server host
-                    try {
-                        const keyPart = accessKey.split('#')[0];
-                        const match = keyPart.match(/@([^:]+):/);
-                        if (match) {
-                            serverHost = match[1];
-                        }
-                    } catch (e) {
-                        serverHost = 'Unknown';
-                    }
-                }
+                document.getElementById('resultUrl').textContent = renamedUrl;
+                document.getElementById('result').classList.remove('hidden');
 
-                // Create new access key with new name
-                const keyWithoutName = accessKey.split('#')[0];
-                const encodedNewName = encodeURIComponent(serverName);
-                const newAccessKey = `${keyWithoutName}#${encodedNewName}`;
+                // Generate QR Code
+                document.getElementById('qrcode').innerHTML = '';
+                new QRCode(document.getElementById('qrcode'), {
+                    text: renamedUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                });
 
-                // Display results
-                document.getElementById('oldName').textContent = oldServerName;
-                document.getElementById('newName').textContent = serverName;
-                document.getElementById('serverHost').textContent = serverHost;
-                document.getElementById('resultKey').value = newAccessKey;
-                resultSection.classList.add('show');
+                // Save to history
+                const historyItem = {
+                    id: Date.now(),
+                    name: name,
+                    url: renamedUrl,
+                    originalUrl: url,
+                    timestamp: new Date().toISOString()
+                };
+                history.unshift(historyItem);
+                localStorage.setItem('outlineHistory', JSON.stringify(history));
+                renderHistory();
 
-                // Reset copy button
-                const copyBtn = document.querySelector('.copy-btn');
-                copyBtn.textContent = '📋 Copy';
-                copyBtn.classList.remove('copied');
-
-            } catch (error) {
-                keyError.textContent = 'Access key format မမှန်ကန်ပါ။ ကျေးဇူးပြု၍ ထပ်စမ်းကြည့်ပါ';
-                keyError.classList.add('show');
-                console.error('Parse error:', error);
+                showNotification(t.notifSaved, 'success');
+            } catch (e) {
+                showNotification(t.errorInvalid, 'error');
             }
         }
 
-        function copyToClipboard() {
-            const resultKey = document.getElementById('resultKey');
-            const copyBtn = document.querySelector('.copy-btn');
+        function clearFields() {
+            document.getElementById('clientUrl').value = '';
+            document.getElementById('customName').value = '';
+            document.getElementById('result').classList.add('hidden');
+        }
 
-            resultKey.select();
-            resultKey.setSelectionRange(0, 99999);
-
-            navigator.clipboard.writeText(resultKey.value).then(() => {
-                copyBtn.textContent = '✅ Copied!';
-                copyBtn.classList.add('copied');
-
-                setTimeout(() => {
-                    copyBtn.textContent = '📋 Copy';
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                document.execCommand('copy');
-                copyBtn.textContent = '✅ Copied!';
-                copyBtn.classList.add('copied');
+        function copyUrl() {
+            const url = document.getElementById('resultUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                const t = translations[currentLang];
+                showNotification(t.notifCopied, 'success');
             });
         }
 
-        function clearForm() {
-            document.getElementById('accessKey').value = '';
-            document.getElementById('serverName').value = '';
-            document.getElementById('resultSection').classList.remove('show');
-            document.getElementById('keyError').classList.remove('show');
-            document.getElementById('nameError').classList.remove('show');
+        function renderHistory() {
+            const t = translations[currentLang];
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>${t.emptyHistory}</h3>
+                        <p>${t.emptyHistoryDesc}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            historyList.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" class="history-checkbox" data-id="${item.id}">
+                            <span class="history-item-name">${item.name}</span>
+                        </div>
+                        <small style="color: var(--text-secondary);">${new Date(item.timestamp).toLocaleString()}</small>
+                    </div>
+                    <div class="history-item-url">${item.url}</div>
+                    <div class="history-item-actions">
+                        <button class="btn-success" onclick="viewQR('${item.url}', '${item.name}')">
+                            <span>📱</span>
+                            <span>${t.btnView}</span>
+                        </button>
+                        <button class="btn-success" onclick="copyHistoryUrl('${item.url}')">
+                            <span>📋</span>
+                            <span>${t.btnCopy}</span>
+                        </button>
+                        <button class="btn-danger" onclick="deleteHistory(${item.id})">
+                            <span>🗑️</span>
+                            <span>${t.btnDelete}</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Allow Enter key to convert (on server name input)
-        document.getElementById('serverName').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                changeServerName();
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            document.querySelectorAll('.history-checkbox').forEach(cb => {
+                cb.checked = selectAll;
+            });
+        }
+
+        function deleteSelected() {
+            const selected = Array.from(document.querySelectorAll('.history-checkbox:checked'))
+                .map(cb => parseInt(cb.dataset.id));
+            
+            if (selected.length === 0) return;
+
+            history = history.filter(item => !selected.includes(item.id));
+            localStorage.setItem('outlineHistory', JSON.stringify(history));
+            document.getElementById('selectAll').checked = false;
+            renderHistory();
+
+            const t = translations[currentLang];
+            showNotification(t.notifDeleted, 'success');
+        }
+
+        function viewQR(url, name) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 20px;
+                text-align: center;
+            `;
+            
+            const title = document.createElement('h2');
+            title.textContent = name;
+            title.style.marginBottom = '20px';
+            title.style.color = '#0f172a';
+            
+            const qrContainer = document.createElement('div');
+            qrContainer.id = 'modalQR';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '✕ Close';
+            closeBtn.className = 'btn-danger';
+            closeBtn.style.marginTop = '20px';
+            closeBtn.onclick = () => modal.remove();
+            
+            content.appendChild(title);
+            content.appendChild(qrContainer);
+            content.appendChild(closeBtn);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            new QRCode(qrContainer, {
+                text: url,
+                width: 300,
+                height: 300,
+            });
+            
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+        }
+
+        function copyHistoryUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                const t = translations[currentLang];
+                showNotification(t.notifCopied, 'success');
+            });
+        }
+
+        function deleteHistory(id) {
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem('outlineHistory', JSON.stringify(history));
+            renderHistory();
+            
+            const t = translations[currentLang];
+            showNotification(t.notifDeleted, 'success');
+        }
+
+        function deleteAllHistory() {
+            if (!confirm('Are you sure you want to delete all history?')) return;
+            
+            history = [];
+            localStorage.setItem('outlineHistory', JSON.stringify(history));
+            document.getElementById('selectAll').checked = false;
+            renderHistory();
+            
+            const t = translations[currentLang];
+            showNotification(t.notifDeletedAll, 'success');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            if (type === 'error') {
+                notification.style.background = 'var(--danger)';
             }
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.4s ease reverse';
+                setTimeout(() => notification.remove(), 400);
+            }, 3000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHistory();
+            updateTranslations();
         });
     </script>
 </body>
